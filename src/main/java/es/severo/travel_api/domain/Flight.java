@@ -44,7 +44,7 @@ public class Flight {
     private Integer durationMinutes;
 
     @Column(name = "base_price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal base_price;
+    private BigDecimal basePrice;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

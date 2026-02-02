@@ -1,6 +1,8 @@
 package es.severo.travel_api.controller;
 
 import es.severo.travel_api.domain.Flight;
+import es.severo.travel_api.dto.FlightDto;
+import es.severo.travel_api.dto.request.PatchFlightRequest;
 import es.severo.travel_api.service.FlightService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,17 +20,12 @@ public class FlightController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<Flight> getFlightById(@PathVariable long id){
+    public ResponseEntity<FlightDto> getFlightById(@PathVariable Long id){
         return ResponseEntity.ok(flightService.getFlightById(id));
     }
 
-    @GetMapping()
-    public ResponseEntity<List<Flight>> getFlightByDepartureAndArrival(
-            @RequestParam(required = false)
-            String departureCode,
-            @RequestParam(required = true)
-            String arrivalCode
-    ){
-        return ResponseEntity.ok(flightService.getFlightByDepartureAndArrivalAirport(arrivalCode, departureCode));
+    @PatchMapping("/{id}")
+    public ResponseEntity<FlightDto> updateFlightById(@PathVariable Long id, PatchFlightRequest req){
+        return ResponseEntity.ok(flightService.update(id, req));
     }
 }
