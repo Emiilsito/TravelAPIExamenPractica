@@ -4,9 +4,14 @@ import es.severo.travel_api.domain.Passenger;
 import es.severo.travel_api.dto.PassengerDto;
 import es.severo.travel_api.dto.request.UpdatePassengerRequest;
 import es.severo.travel_api.repository.PassengerRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @Service
 public class PassengerService {
@@ -20,7 +25,7 @@ public class PassengerService {
         Passenger p = passengerRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se ha encontrado el pasajero con id " + id)
         );
-        if (passengerRepository.existsByDocumentNumberIgnoreCaseAndIdNot(req.documentNumber())) {
+        if (passengerRepository.existsByDocumentNumberIgnoreCaseAndIdNot(req.documentNumber(), id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese documento ya esta en uso");
         }
 
@@ -29,6 +34,12 @@ public class PassengerService {
 
         return toDto(p);
     }
+
+    @Transactional(readOnly = true)
+    public Page<PassengerDto> getAll(Pageable pageable){
+        return passengerRepository.findAll(pageable).map(this::toDto);
+    }
+
 
     public PassengerDto toDto(Passenger p){
         return new PassengerDto(p.getId(), p.getDocumentNumber(), p.getGender());

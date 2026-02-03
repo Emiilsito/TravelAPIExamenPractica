@@ -5,6 +5,7 @@ import es.severo.travel_api.domain.Airport;
 import es.severo.travel_api.domain.Flight;
 import es.severo.travel_api.dto.FlightDto;
 import es.severo.travel_api.dto.request.PatchFlightRequest;
+import es.severo.travel_api.dto.request.UpdateFlightRequest;
 import es.severo.travel_api.repository.AirlineRepository;
 import es.severo.travel_api.repository.AirportRepository;
 import es.severo.travel_api.repository.FlightRepository;
@@ -58,10 +59,46 @@ public class FlightService {
         f.setBasePrice(req.basePrice());
 
         Flight saved = flightRepository.save(f);
+
         return toDto(saved);
     }
 
+
+    public FlightDto updateFlightComplete(Long id, UpdateFlightRequest req){
+        Flight f = flightRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vuelo no existe"));
+
+        Airline airline = airlineRepository.findById(f.getAirline().getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aerolinea no existe"));
+
+        Airport departureAirport = airportRepository.findById(f.getDepartureAirport().getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aeropuerto de salida no existe"));
+        Airport arrivalAirport = airportRepository.findById(f.getArrivalAirport().getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aeropuerto de entrada no existe"));
+
+        if (req == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mala request");
+        }
+
+        if (flightRepository.existsByFlightNumberAndDepartureDateAndIdNot(f.getFlightNumber(), f.getDepartureDate(), f.getId())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Violacion en la restriccion");
+        }
+
+        f.setFlightNumber(req.flightNumber());
+        f.setStatus(req.status());
+        f.setArrivalTime(req.arrivalTime());
+        f.setArrivalDate(req.arrivalDate());
+        f.setDepartureDate(req.departureDate());
+        f.setDepartureTime(req.departureTime());
+        f.setBasePrice(req.basePrice());
+
+
+        f.setAirline(airline);
+        f.setArrivalAirport(arrivalAirport);
+        f.setDepartureAirport(departureAirport);
+
+        Flight save = flightRepository.save(f);
+
+        return toDto(save);
+    }
+
     public FlightDto toDto(Flight f){
-        return new FlightDto(f.getId(), f.getFlightNumber(), f.getDepartureDate(), f.getDepartureTime(), f.getArrivalDate(), f.getArrivalTime(), f.getDurationMinutes(), f.getBase_price(), f.getStatus(), f.getAirline().getCode(), f.getDepartureAirport().getCode(), f.getArrivalAirport().getCode());
+        return new FlightDto(f.getId(), f.getFlightNumber(), f.getDepartureDate(), f.getDepartureTime(), f.getArrivalDate(), f.getArrivalTime(), f.getDurationMinutes(), f.getBasePrice(), f.getStatus(), f.getAirline().getCode(), f.getDepartureAirport().getCode(), f.getArrivalAirport().getCode());
     }
 }
