@@ -3,16 +3,24 @@ package es.severo.travel_api.service;
 import es.severo.travel_api.domain.Airline;
 import es.severo.travel_api.domain.Airport;
 import es.severo.travel_api.domain.Flight;
+import es.severo.travel_api.domain.FlightStatus;
 import es.severo.travel_api.dto.FlightDto;
+import es.severo.travel_api.dto.FlightSearchResultDto;
 import es.severo.travel_api.dto.request.PatchFlightRequest;
 import es.severo.travel_api.dto.request.UpdateFlightRequest;
 import es.severo.travel_api.repository.AirlineRepository;
 import es.severo.travel_api.repository.AirportRepository;
 import es.severo.travel_api.repository.FlightRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,7 +41,7 @@ public class FlightService {
     }
 
     public List<FlightDto> getFlightByDepartureAndArrivalAirport(String departureCode, String arrivalCode){
-        return flightRepository.findByDepartureAirportCodeAndArrivalAirportCode(arrivalCode, departureCode);
+        return flightRepository.findByDepartureAirportCodeAndArrivalAirportCode(arrivalCode, departureCode).stream().map(this::toDto).toList();
     }
 
     public FlightDto update(Long id, PatchFlightRequest req){
@@ -96,6 +104,16 @@ public class FlightService {
         Flight save = flightRepository.save(f);
 
         return toDto(save);
+    }
+
+    public FlightDto findByStatusAndDepartureDate(FlightStatus status, LocalDate departureDate){
+        return flightRepository.findByStatusAndDepartureDate(status, departureDate).map(this::toDto).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vuelo no encontrado"));
+    }
+
+    @Transactional
+    public Page<FlightSearchResultDto> searchResults(String from, String to, LocalDate dateFrom, LocalDate dateTo, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable){
+        return flightRepository.searchFlights(from, to, dateFrom, dateTo, minPrice, maxPrice, pageable);
+
     }
 
     public FlightDto toDto(Flight f){

@@ -1,6 +1,8 @@
 package es.severo.travel_api.controller;
 
 import es.severo.travel_api.dto.BookingDto;
+import es.severo.travel_api.dto.GroupBookingsResultDto;
+import es.severo.travel_api.dto.request.CreateGroupBookingsRequest;
 import es.severo.travel_api.dto.request.PatchBookingStatusRequest;
 import es.severo.travel_api.service.BookingService;
 import jakarta.validation.Valid;
@@ -34,6 +36,5 @@ public class BookingController {
         }
 
         return bookingService.getAll(pageable);
-
     }
 }

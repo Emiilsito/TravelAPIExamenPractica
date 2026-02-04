@@ -6,6 +6,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(
@@ -61,4 +62,7 @@ public class Flight {
     @ManyToOne()
     @JoinColumn(name = "arrival_airport_id", nullable = false)
     private Airport arrivalAirport;
+
+    @OneToMany(mappedBy = "flight", fetch = FetchType.LAZY)
+    private List<Booking> bookings;
 }
